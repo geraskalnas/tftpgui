@@ -64,7 +64,7 @@ If 'listenipaddress' is set to a specific IP address of the computer
 only listen on the address given.
 
 If run with the --nogui option then the program has no dependencies other
-than standard Python (versions 2.5 to 2.7).  If run with a GUI then the
+than standard Python3.  If run with a GUI then the
 script imports the Tkinter module, and some Gnu/Linux distributions may
 require this installing (package python-tk in Debian).
 
@@ -73,16 +73,16 @@ under Gnu/Linux the program must be run with administrator pivileges
 (ie using sudo) - as the OS requires this.
 """
 
-import os, sys, thread, time
+import os, sys, _thread, time
 
 from optparse import OptionParser
 
 from tftp_package import tftpcfg, tftp_engine
 
 # Check the python version
-if not sys.version_info[0] == 2 and sys.version_info[1] >= 5:
+if not sys.version_info[0] == 3 and sys.version_info[1] >= 3:
     print("Sorry, your python version is not compatable")
-    print("This program requires python 2.5, 2.6 or 2.7")
+    print("This program requires at least python 3.3")
     print("Program exiting")
     sys.exit(1)
 
@@ -138,7 +138,7 @@ if (not options.nogui) and configfile == default_configfile:
     # does not exist, or sections are missing, re-create it
     try:
         cfgdict = tftpcfg.getconfig(scriptdirectory, configfile)
-    except tftpcfg.ConfigError, e:
+    except tftpcfg.ConfigError as e:
         # On error fall back to defaults, but warn the user
         cfgdict = tftpcfg.get_defaults()
         error_text = "Error in config file:\n" + str(e) + "\nso using defaults"
@@ -147,9 +147,9 @@ else:
     # therefore read it with more rigour and exit if any errors
     try:
         cfgdict = tftpcfg.getconfigstrict(scriptdirectory, configfile)
-    except tftpcfg.ConfigError, e:
-        print "Error in config file:"
-        print e
+    except tftpcfg.ConfigError as e:
+        print("Error in config file:")
+        print(e)
         sys.exit(1)
 
 ######## Create the server ######################
@@ -166,12 +166,12 @@ server = tftp_engine.ServerState(**cfgdict)
 if options.nogui:
     # Run the server from the command line without a gui
     if server.listenipaddress :
-        print "TFTP server listening on %s:%s\nSee logs at:\n%s" % (server.listenipaddress,
+        print("TFTP server listening on %s:%s\nSee logs at:\n%s" % (server.listenipaddress,
                                                                     server.listenport,
-                                                                    server.logfolder)
+                                                                    server.logfolder))
     else:
-        print "TFTP server listening on port %s\nSee logs at:\n%s" % (server.listenport,server.logfolder)
-    print "Press CTRL-c to stop"
+        print("TFTP server listening on port %s\nSee logs at:\n%s" % (server.listenport,server.logfolder))
+    print("Press CTRL-c to stop")
     # loop_nogui runs the server loop,
     # which exits if the the server cannot listen on the port given
     # otherwise it exits on a CTRL-C keyboard interrupt
@@ -184,12 +184,12 @@ if options.nogui:
 # Run the server with a gui
 try:
     # Check Tkinter can be imported
-    import Tkinter
+    import tkinter
 except Exception:
-    print """\
+    print("""\
 Failed to import Tkinter - required to run the GUI.
 Check the TKinter Python module has been installed on this machine.
-Alternatively, run with the --nogui option to operate without a GUI"""
+Alternatively, run with the --nogui option to operate without a GUI""")
     sys.exit(1)
 
 # If an error occurred reading the config file, show it
@@ -197,7 +197,7 @@ if error_text:
     server.text = error_text +"\n\nPress Start to enable the tftp server"
 
 # create a thread which runs the loop
-thread.start_new_thread(tftp_engine.loop, (server,))
+_thread.start_new_thread(tftp_engine.loop, (server,))
 
 # create the gui
 from tftp_package import gui_stuff

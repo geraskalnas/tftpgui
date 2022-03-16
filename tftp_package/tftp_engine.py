@@ -467,7 +467,7 @@ class TFTPserver(asyncore.dispatcher):
         self.connection = None
         try:
             self.bind((server.listenipaddress, server.listenport))
-        except Exception, e:
+        except Exception as e:
             server.log_exception(e)
             if server.listenipaddress:
                 server.text = """Failed to bind to %s : %s
@@ -487,7 +487,7 @@ socket on this port."""
             if os.name == "posix" and server.listenport<1000 and os.geteuid() != 0:
                 server.text += "\n(Ports below 1000 may need root or administrator privileges.)"
             server.text += "\nFurther error details will be given in the logs file."
-            raise NoService, "Unable to bind to given address and port"
+            raise NoService("Unable to bind to given address and port")
 
     def handle_read(self):
         """Handle incoming data - Checks if this is an existing connection,
@@ -815,7 +815,7 @@ class SendData(Connection):
                 self.fp=open(self.filepath, "r")
             else:
                 raise DropPacket
-        except IOError, e:
+        except IOError as e:
             server.add_text("%s requested %s: unable to open file" % (rx_addr[0], self.filename))
             # Send an error value
             self.tx_data="\x00\x05\x00\x02Unable to open file\x00"
@@ -926,7 +926,7 @@ class ReceiveData(Connection):
                 self.fp=open(self.filepath, "w")
             else:
                 raise DropPacket
-        except IOError, e:
+        except IOError as e:
             server.add_text("%s trying to send %s: unable to open file" % (rx_addr[0], self.filename))
             # Send an error value
             self.tx_data="\x00\x05\x00\x02Unable to open file\x00"
@@ -1033,10 +1033,10 @@ def loop_nogui(server):
             if not len(server):
                 # There are no connections so put in a sleep
                 time.sleep(0.1)
-    except Exception, e:
+    except Exception as e:
         # log the exception and exit the main loop
         server.log_exception(e)
-        print server.text
+        print(server.text)
         return 1
     except KeyboardInterrupt:
         return 0
@@ -1071,11 +1071,11 @@ def loop(server):
                 else:
                     # if the server is not serving, put a sleep in the loop
                     time.sleep(0.25)
-            except NoService, e:
+            except NoService as e:
                 server.log_exception(e)
                 # Unable to bind
                 # GUI will handle this, so loop continues
-    except Exception, e:
+    except Exception as e:
         # log the exception and exit the main loop
         server.log_exception(e)
         return 1
@@ -1111,10 +1111,10 @@ def loop_multiserver(server_list):
         while True:
             for server in server_list:
                 server.poll()
-    except Exception, e:
+    except Exception as e:
         # log the exception and exit the main loop
         server.log_exception(e)
-        print server.text
+        print(server.text)
         return 1
     except KeyboardInterrupt:
         return 0
